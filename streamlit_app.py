@@ -1,4 +1,5 @@
 import streamlit as st
+st.set_page_config(page_title="PEA Meter Dashboard", layout="wide")
 st.write("✅ เริ่มรันโค้ดแล้ว!!")
 import pandas as pd
 import plotly.graph_objs as go
@@ -15,7 +16,7 @@ def extract_numeric_column(series):
     )
 
 # ---------- ตั้งค่าเบื้องต้นของหน้า ----------
-st.set_page_config(page_title="PEA Meter Dashboard", layout="wide")
+
 st.title("ระบบแสดงกราฟข้อมูลมิเตอร์")
 # ✅ แสดงข้อความทันทีให้หน้าเว็บไม่ขาวเปล่า
 st.markdown("👀 รอรับข้อมูลจากผู้ใช้งาน...")
