@@ -1,4 +1,5 @@
 import streamlit as st
+st.write("✅ เริ่มรันโค้ดแล้ว!!")
 import pandas as pd
 import plotly.graph_objs as go
 import datetime
