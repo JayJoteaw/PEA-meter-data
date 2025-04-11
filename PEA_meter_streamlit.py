@@ -37,9 +37,16 @@ file_ready = False
 df = pd.DataFrame()
 if meter_id and selected_date:
     try:
+        # ✅ Debug ก่อนโหลด JSON
+        st.write("🔄 กำลังโหลดข้อมูลจาก GitHub...")
+
         # โหลดจาก GitHub raw JSON
         json_url = f"https://raw.githubusercontent.com/JayJoteaw/PEA-meter-data/main/{meter_id}.json"
         df = pd.read_json(json_url)
+
+        # ✅ Debug หลังโหลด
+        st.write("✅ โหลดข้อมูลสำเร็จ (ตัวอย่าง 5 แถว):")
+        st.write(df.head())
 
         df["Datetime"] = pd.to_datetime(df["DateTime"].astype(str), errors="coerce", dayfirst=True)
         df = df.dropna(subset=["Datetime"])
