@@ -1,5 +1,6 @@
-import streamlit as st
 st.set_page_config(page_title="PEA Meter Dashboard", layout="wide")
+
+import streamlit as st
 st.write("✅ เริ่มรันโค้ดแล้ว!!")
 import pandas as pd
 import plotly.graph_objs as go
