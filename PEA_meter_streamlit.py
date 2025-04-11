@@ -15,6 +15,8 @@ def extract_numeric_column(series):
 # ---------- ตั้งค่าเบื้องต้นของหน้า ----------
 st.set_page_config(page_title="PEA Meter Dashboard", layout="wide")
 st.title("ระบบแสดงกราฟข้อมูลมิเตอร์")
+# ✅ เพิ่มตรงนี้เพื่อให้หน้าเว็บไม่ขาว
+st.write("แอปรันสำเร็จ! (ทดสอบ)")
 
 # ---------- Input จากผู้ใช้งาน ----------
 meter_id = st.text_input("หมายเลขมิเตอร์", value="")
