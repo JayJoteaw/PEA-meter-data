@@ -1,10 +1,10 @@
 import streamlit as st
-st.write("✅ เริ่มต้นแอปสำเร็จ!")
 import pandas as pd
 import plotly.graph_objs as go
 import datetime
 import math
 
+st.write("✅ importสำเร็จ!")
 # ---------- ฟังก์ชันแยกเลขจาก string ----------
 def extract_numeric_column(series):
     return (
