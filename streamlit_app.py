@@ -1,12 +1,10 @@
 import streamlit as st
 st.set_page_config(page_title="PEA Meter Dashboard", layout="wide")
-st.write("✅ เริ่มรันโค้ดแล้ว!!")
 import pandas as pd
 import plotly.graph_objs as go
 import datetime
 import math
 
-st.write("✅ importสำเร็จ!")
 # ---------- ฟังก์ชันแยกเลขจาก string ----------
 def extract_numeric_column(series):
     return (
@@ -44,11 +42,6 @@ if meter_id and selected_date:
     try:
         # ✅ Debug ก่อนโหลด JSON พร้อมโชว์ URL จริง
         json_url = f"https://raw.githubusercontent.com/JayJoteaw/PEA-meter-data/main/{meter_id}.json"
-        st.write(f"🔄 กำลังโหลด: {json_url}")
-
-        df = pd.read_json(json_url)
-        st.write("✅ โหลดข้อมูลสำเร็จ (ตัวอย่าง 5 แถว):")
-        st.write(df.head())
 
         df["Datetime"] = pd.to_datetime(df["DateTime"].astype(str), errors="coerce", dayfirst=True)
         df = df.dropna(subset=["Datetime"])
