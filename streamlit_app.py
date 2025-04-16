@@ -46,6 +46,11 @@ if meter_id and selected_date:
 
         df["Datetime"] = pd.to_datetime(df["DateTime"].astype(str), errors="coerce", dayfirst=True)
         df = df.dropna(subset=["Datetime"])
+        if not df.empty:
+            min_dt = df["Datetime"].min()
+            max_dt = df["Datetime"].max()
+            st.success(
+                f"📊 ข้อมูลของมิเตอร์ **{meter_id}** มีตั้งแต่วันที่ {min_dt.strftime('%Y-%m-%d %H:%M')} ถึง {max_dt.strftime('%Y-%m-%d %H:%M')}"
 
         allowed_columns = ["Voltage", "Power", "Current", "Frequency", "Energy"]
         graph_options = [col for col in df.columns if col in allowed_columns]
@@ -101,7 +106,6 @@ if file_ready and available_times:
                         st.stop()
 
                     if df_filtered[y_col].notna().sum() > 0:
-                        st.info(f"📅 กำลังแสดงข้อมูลตั้งแต่ {start_dt.strftime('%Y-%m-%d %H:%M')} ถึง {end_dt.strftime('%Y-%m-%d %H:%M')}")
                         y_min = df_filtered[y_col].min()
                         y_max = df_filtered[y_col].max()
                         y_range = y_max - y_min
