@@ -49,9 +49,8 @@ if meter_id and selected_date:
         if not df.empty:
             min_dt = df["Datetime"].min()
             max_dt = df["Datetime"].max()
-            st.success(
-                f"📊 ข้อมูลของมิเตอร์ **{meter_id}** มีตั้งแต่วันที่ {min_dt.strftime('%Y-%m-%d %H:%M')} ถึง {max_dt.strftime('%Y-%m-%d %H:%M')}"
-
+            st.success(f"📊 ข้อมูลของมิเตอร์ **{meter_id}** มีตั้งแต่วันที่ {min_dt.strftime('%Y-%m-%d %H:%M')} ถึง {max_dt.strftime('%Y-%m-%d %H:%M')}")
+                
         allowed_columns = ["Voltage", "Power", "Current", "Frequency", "Energy"]
         graph_options = [col for col in df.columns if col in allowed_columns]
         graph_type = st.radio("เลือกกราฟที่ต้องการดู", graph_options)
