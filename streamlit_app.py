@@ -42,6 +42,7 @@ if meter_id and selected_date:
     try:
         # ✅ Debug ก่อนโหลด JSON พร้อมโชว์ URL จริง
         json_url = f"https://raw.githubusercontent.com/JayJoteaw/PEA-meter-data/main/{meter_id}.json"
+        df = pd.read_json(json_url)
 
         df["Datetime"] = pd.to_datetime(df["DateTime"].astype(str), errors="coerce", dayfirst=True)
         df = df.dropna(subset=["Datetime"])
