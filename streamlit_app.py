@@ -38,7 +38,8 @@ unit_map = {
     "Power": "kW",
     "Current": "A",
     "Frequency": "Hz",
-    "Energy": "kWh"
+    "Energy": "kWh",
+    "Load": "kVA"
 }
 
 available_times = []
