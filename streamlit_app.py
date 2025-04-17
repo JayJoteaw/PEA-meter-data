@@ -55,8 +55,7 @@ if uploaded_file and selected_date:
                 max_dt = df["Datetime"].max()
                 st.success(f"\U0001F4CA ข้อมูลมีตั้งแต่วันที่ {min_dt.strftime('%Y-%m-%d %H:%M')} ถึง {max_dt.strftime('%Y-%m-%d %H:%M')}")
 
-            allowed_columns = ["Voltage", "Power", "Current", "Frequency", "Energy"]
-            graph_options = [col for col in df.columns if col in allowed_columns]
+            graph_options = [col for col in df.columns if "date" not in col.lower()]
             graph_type = st.radio("เลือกกราฟที่ต้องการดู", graph_options)
 
             df_selected = df[df["Datetime"].dt.date == selected_date]
