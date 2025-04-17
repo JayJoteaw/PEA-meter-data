@@ -51,7 +51,7 @@ if uploaded_file and selected_date:
             st.error("ไม่พบหัวตารางที่มี 'DateTime'")
         else:
             df = pd.read_excel(uploaded_file, skiprows=header_row)
-            df["Datetime"] = pd.to_datetime(df["DateTime"].astype(str), errors="coerce", dayfirst=True)
+            df["Datetime"] = pd.to_datetime(df["DateTime"].astype(str), errors="coerce")
             df = df.dropna(subset=["Datetime"])
 
             if not df.empty:
