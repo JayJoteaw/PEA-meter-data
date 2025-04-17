@@ -38,7 +38,8 @@ unit_map = {
     "Power": "kW",
     "Current": "A",
     "Frequency": "Hz",
-    "Energy": "kWh"
+    "Energy": "kWh",
+    "Load": "kVA",
 }
 
 available_times = []
@@ -51,13 +52,19 @@ if uploaded_file and selected_date:
             st.error("ไม่พบหัวตารางที่มี 'DateTime'")
         else:
             df = pd.read_excel(uploaded_file, skiprows=header_row)
-            df["Datetime"] = pd.to_datetime(df["DateTime"].astype(str), errors="coerce", dayfirst=True)
+
+            # ---------- แก้ตรงนี้ ----------
+            if not pd.api.types.is_datetime64_any_dtype(df["DateTime"]):
+                df["Datetime"] = pd.to_datetime(df["DateTime"].astype(str), errors="coerce")
+            else:
+                df["Datetime"] = df["DateTime"]
+
             df = df.dropna(subset=["Datetime"])
 
             if not df.empty:
                 min_dt = df["Datetime"].min()
                 max_dt = df["Datetime"].max()
-                st.success(f"\U0001F4CA ข้อมูลมีตั้งแต่วันที่ {min_dt.strftime('%Y-%m-%d %H:%M')} ถึง {max_dt.strftime('%Y-%m-%d %H:%M')}")
+                st.success(f"📊 ข้อมูลมีตั้งแต่วันที่ {min_dt.strftime('%Y-%m-%d %H:%M')} ถึง {max_dt.strftime('%Y-%m-%d %H:%M')}")
 
             graph_options = [
                 col for col in df.columns
