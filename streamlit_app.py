@@ -54,15 +54,15 @@ if uploaded_file and selected_date and selected_sheet:
     try:
         header_row = detect_header_row(uploaded_file, selected_sheet)
         if header_row is None:
-            st.error("ไม่พบหัวตารางที่มี 'DateTime'")
+            st.error("ไม่พบหัวตารางที่มี 'วัน-เวลา'")
         else:
             df = pd.read_excel(uploaded_file, sheet_name=selected_sheet, skiprows=header_row)
-            df["Datetime"] = pd.to_datetime(df["DateTime"].astype(str), errors="coerce", dayfirst=True)
-            df = df.dropna(subset=["Datetime"])
+            df["วัน-เวลา"] = pd.to_วัน-เวลา(df["วัน-เวลา"].astype(str), errors="coerce", dayfirst=True)
+            df = df.dropna(subset=["วัน-เวลา"])
 
             if not df.empty:
-                min_dt = df["Datetime"].min()
-                max_dt = df["Datetime"].max()
+                min_dt = df["วัน-เวลา"].min()
+                max_dt = df["วัน-เวลา"].max()
                 st.success(f"\U0001F4CA ข้อมูลมีตั้งแต่วันที่ {min_dt.strftime('%Y-%m-%d %H:%M')} ถึง {max_dt.strftime('%Y-%m-%d %H:%M')}")
 
             graph_options = [
