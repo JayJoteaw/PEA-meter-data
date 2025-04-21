@@ -134,11 +134,11 @@ if file_ready and available_times:
 
                 if y_range <= 100:
                     y_min_adj = y_min - 1
-                    y_max_adj = y_max + 1
+                    y_max_adj = y_max + 1 + (y_range * 0.05)  # เพิ่ม 5% padding ด้านบน
                     y_dtick = 10
                 else:
                     y_min_adj = y_min - 10
-                    y_max_adj = y_max + 10
+                    y_max_adj = y_max + 10 + (y_range * 0.05)  # เพิ่ม 5% padding ด้านบน
                     y_dtick = max(1, round(y_range / 20))
 
                 y_mean = df_filtered[y_col].mean()
