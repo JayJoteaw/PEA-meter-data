@@ -25,12 +25,12 @@ st.set_page_config(page_title="PEA Meter Dashboard", layout="wide")
 st.title("ระบบแสดงกราฟข้อมูลมิเตอร์")
 
 # ---------- อัปโหลดไฟล์จากผู้ใช้งาน ----------
-uploaded_file = st.file_uploader("\U0001F4C4 อัปโหลดไฟล์ Excel", type=["xlsx"])
+uploaded_file = st.file_uploader("📄 อัปโหลดไฟล์ Excel", type=["xlsx"])
 if uploaded_file:
     excel_file = pd.ExcelFile(uploaded_file)
     sheet_names = excel_file.sheet_names
     selected_sheet = st.selectbox("เลือกชีตที่ต้องการ", sheet_names)
-    st.markdown("ได้รับข้อมูลเรียบร้อยแล้ว 👌🏻")
+    st.markdown("✅ ได้รับข้อมูลเรียบร้อยแล้ว 👌🏻")
 else:
     selected_sheet = None
     st.markdown("👀 รอรับข้อมูลจากผู้ใช้งาน...")
@@ -72,27 +72,26 @@ if uploaded_file and selected_date and selected_sheet:
             df["Datetime"] = pd.to_datetime(df[datetime_column].astype(str), errors="coerce", dayfirst=True)
             df = df.dropna(subset=["Datetime"])
 
-            # ✅ แสดงชื่อมิเตอร์และสถานะ ถ้ามีคอลัมน์อยู่ใน DataFrame
-            col1, col2 = st.columns(2)
+            # ✅ แสดงชื่อมิเตอร์และสถานะอิงจากวันที่ที่เลือก
+            df_day = df[df["Datetime"].dt.date == selected_date]
 
+            col1, col2 = st.columns(2)
             with col1:
-                if any(col.strip().lower() == "pea มิเตอร์" for col in df.columns):
-                    meter_col = [col for col in df.columns if col.strip().lower() == "pea มิเตอร์"][0]
-                    meter_value = df[meter_col].dropna().astype(str).unique()
+                if "PEA มิเตอร์" in df_day.columns and not df_day.empty:
+                    meter_value = df_day["PEA มิเตอร์"].dropna().astype(str).unique()
                     if len(meter_value) > 0:
                         st.info(f"🔌 กำลังอ่านมิเตอร์: **{', '.join(meter_value)}**")
 
             with col2:
-                if any(col.strip().lower() == "สถานะ" for col in df.columns):
-                    status_col = [col for col in df.columns if col.strip().lower() == "สถานะ"][0]
-                    status_value = df[status_col].dropna().astype(str).unique()
+                if "สถานะ" in df_day.columns and not df_day.empty:
+                    status_value = df_day["สถานะ"].dropna().astype(str).unique()
                     if len(status_value) > 0:
                         st.warning(f"📟 สถานะ: **{', '.join(status_value)}**")
 
             if not df.empty:
                 min_dt = df["Datetime"].min()
                 max_dt = df["Datetime"].max()
-                st.success(f"🗓️ ข้อมูลมีตั้งแต่วันที่ {min_dt.strftime('%Y-%m-%d %H:%M')} ถึง {max_dt.strftime('%Y-%m-%d %H:%M')}")
+                st.success(f"📊 ข้อมูลมีตั้งแต่วันที่ {min_dt.strftime('%Y-%m-%d %H:%M')} ถึง {max_dt.strftime('%Y-%m-%d %H:%M')}")
 
             # ✅ ลบคอลัมน์ที่ไม่ต้องการให้เลือกเป็นกราฟ
             excluded_columns = ["pea มิเตอร์", "วัน-เวลา", "สถานะ"]
