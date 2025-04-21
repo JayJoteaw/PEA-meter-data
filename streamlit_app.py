@@ -56,37 +56,25 @@ if uploaded_file and selected_date and selected_sheet:
         if header_row is None:
             st.error("ไม่พบหัวตารางที่มี 'DateTime' หรือ 'วัน-เวลา'")
         else:
-            df = pd.read_excel(uploaded_file, sheet_name=selected_sheet, skiprows=header_row)
+            # ✅ โหลดข้อมูลและใส่ชื่อคอลัมน์เอง
+            custom_columns = [
+                "PEA มิเตอร์", "วัน-เวลา", "สถานะ",
+                "แรงดันไฟฟ้าเฟส 1 (V)", "แรงดันไฟฟ้าเฟส 2 (V)",
+                "แรงดันไฟฟ้าเฟส 3 (V)", "Current Import (A)",
+                "Current Export (A)", "Power Factor (P.F.)"
+            ]
+            df = pd.read_excel(uploaded_file, sheet_name=selected_sheet, header=None, names=custom_columns)
+            df = df.drop(index=0)  # ลบแถวซ้ำหัวตาราง (ถ้ามี)
 
-            # ✅ ตรวจหาชื่อคอลัมน์วันเวลา
-            datetime_column = None
-            for col in df.columns:
-                if str(col).strip().lower() in ["datetime", "วัน-เวลา"]:
-                    datetime_column = col
-                    break
-
-            if not datetime_column:
-                st.error("ไม่พบคอลัมน์วันที่ (DateTime หรือ วัน-เวลา)")
-                st.stop()
-
-            df["Datetime"] = pd.to_datetime(df[datetime_column].astype(str), errors="coerce", dayfirst=True)
+            df["Datetime"] = pd.to_datetime(df["วัน-เวลา"], errors="coerce")
             df = df.dropna(subset=["Datetime"])
 
-            # ✅ แสดงชื่อมิเตอร์และสถานะอิงจากวันที่ที่เลือก
+            # ✅ แสดงสถานะของวันที่เลือก
             df_day = df[df["Datetime"].dt.date == selected_date]
-
-            col1, col2 = st.columns(2)
-            with col1:
-                if "PEA มิเตอร์" in df_day.columns and not df_day.empty:
-                    meter_value = df_day["PEA มิเตอร์"].dropna().astype(str).unique()
-                    if len(meter_value) > 0:
-                        st.info(f"🔌 กำลังอ่านมิเตอร์: **{', '.join(meter_value)}**")
-
-            with col2:
-                if "สถานะ" in df_day.columns and not df_day.empty:
-                    status_value = df_day["สถานะ"].dropna().astype(str).unique()
-                    if len(status_value) > 0:
-                        st.warning(f"📟 สถานะ: **{', '.join(status_value)}**")
+            if "สถานะ" in df_day.columns and not df_day.empty:
+                status_value = df_day["สถานะ"].dropna().astype(str).unique()
+                if len(status_value) > 0:
+                    st.warning(f"📟 สถานะ: **{', '.join(status_value)}**")
 
             if not df.empty:
                 min_dt = df["Datetime"].min()
@@ -97,10 +85,8 @@ if uploaded_file and selected_date and selected_sheet:
             excluded_columns = ["pea มิเตอร์", "วัน-เวลา", "สถานะ"]
             graph_options = [
                 col for col in df.columns
-                if "date" not in col.lower()
+                if col.lower() not in excluded_columns
                 and not col.lower().startswith("unnamed")
-                and col.lower() != "no."
-                and col.lower() not in excluded_columns
                 and df[col].notna().sum() > 0
             ]
 
@@ -153,9 +139,8 @@ if file_ready and available_times:
                 y_max = df_filtered[y_col].max()
                 y_range = y_max - y_min
 
-                # ✅ เพิ่มระยะเผื่อด้านบนกราฟ
                 padding_top = y_range * 0.05
-                y_min_adj = y_min - padding_top
+                y_min_adj = y_min
                 y_max_adj = y_max + padding_top
                 y_dtick = max(1, round(y_range / 20))
 
