@@ -12,8 +12,8 @@ def extract_numeric_column(series):
     )
 
 # ---------- ฟังก์ชันตรวจหา header จาก DateTime ----------
-def detect_header_row(uploaded_file):
-    df_raw = pd.read_excel(uploaded_file, header=None)
+def detect_header_row(uploaded_file, selected_sheet):
+    df_raw = pd.read_excel(uploaded_file, sheet_name=selected_sheet, header=None)
     for i, row in df_raw.iterrows():
         if any("DateTime" in str(cell) for cell in row):
             return i
@@ -25,11 +25,16 @@ st.title("ระบบแสดงกราฟข้อมูลมิเตอ�
 
 # ---------- อัปโหลดไฟล์จากผู้ใช้งาน ----------
 uploaded_file = st.file_uploader("\U0001F4C4 อัปโหลดไฟล์ Excel", type=["xlsx"])
-# ✅ แสดงสถานะการอัปโหลดไฟล์
 if uploaded_file:
+    # 📄 ดึงรายชื่อ sheet
+    excel_file = pd.ExcelFile(uploaded_file)
+    sheet_names = excel_file.sheet_names
+    selected_sheet = st.selectbox("เลือกชีตที่ต้องการ", sheet_names)
     st.markdown("ได้รับข้อมูลเรียบร้อยแล้ว 👌🏻")
 else:
+    selected_sheet = None
     st.markdown("👀 รอรับข้อมูลจากผู้ใช้งาน...")
+
 selected_date = st.date_input("เลือกวันที่ (ปี-เดือน-วัน)")
 
 # ---------- Mapping ค่าหน่วยของแต่ละกราฟ ----------
@@ -45,13 +50,13 @@ unit_map = {
 available_times = []
 file_ready = False
 
-if uploaded_file and selected_date:
+if uploaded_file and selected_date and selected_sheet:
     try:
-        header_row = detect_header_row(uploaded_file)
+        header_row = detect_header_row(uploaded_file, selected_sheet)
         if header_row is None:
             st.error("ไม่พบหัวตารางที่มี 'DateTime'")
         else:
-            df = pd.read_excel(uploaded_file, skiprows=header_row)
+            df = pd.read_excel(uploaded_file, sheet_name=selected_sheet, skiprows=header_row)
             df["Datetime"] = pd.to_datetime(df["DateTime"].astype(str), errors="coerce", dayfirst=True)
             df = df.dropna(subset=["Datetime"])
 
