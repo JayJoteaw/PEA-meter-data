@@ -155,7 +155,7 @@ if file_ready and available_times:
 
                 # ✅ เพิ่มระยะเผื่อด้านบนกราฟ
                 padding_top = y_range * 0.05
-                y_min_adj = y_min
+                y_min_adj = y_min - padding_top
                 y_max_adj = y_max + padding_top
                 y_dtick = max(1, round(y_range / 20))
 
