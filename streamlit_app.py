@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import plotly.graph_objs as go
 import datetime
+import math
 
 # ---------- ฟังก์ชันแยกเลขจาก string ----------
 def extract_numeric_column(series):
@@ -132,15 +133,19 @@ if file_ready and available_times:
                 y_max = df_filtered[y_col].max()
                 y_range = y_max - y_min
 
-                if y_range <= 100:
-                    y_min_adj = y_min - 1
-                    y_max_adj = y_max + 1
-                    y_dtick = 10
-                else:
-                    y_min_adj = y_min - 10
-                    y_max_adj = y_max + 10
-                    y_dtick = max(1, round(y_range / 20))
+                # ปัด y_min ลงให้ลงท้ายด้วย 0 หรือ 5
+                y_min_adj = math.floor(y_min / 5) * 5
 
+                # ปัด y_max ขึ้นให้ลงท้ายด้วย 0 หรือ 5
+                y_max_adj = math.ceil(y_max / 5) * 5
+
+                # คำนวณระยะห่าง (ให้ลงท้ายด้วย 5 หรือ 10)
+                y_range = y_max_adj - y_min_adj
+                if y_range <= 100:
+                    y_dtick = 5  # ละเอียดมากขึ้น
+                else:
+                    y_dtick = 10  # กลางๆ
+                    
                 y_mean = df_filtered[y_col].mean()
                 y_peak = df_filtered[y_col].max()
                 y_minval = df_filtered[y_col].min()
