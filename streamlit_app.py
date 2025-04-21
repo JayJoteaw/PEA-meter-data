@@ -76,13 +76,17 @@ if uploaded_file and selected_date and selected_sheet:
                 max_dt = df["Datetime"].max()
                 st.success(f"\U0001F4CA ข้อมูลมีตั้งแต่วันที่ {min_dt.strftime('%Y-%m-%d %H:%M')} ถึง {max_dt.strftime('%Y-%m-%d %H:%M')}")
 
+           # 👉 ลบคอลัมน์ที่ไม่ต้องการให้ผู้ใช้เลือก
+            excluded_columns = ["pea มิเตอร์", "วัน-เวลา", "สถานะ"]
             graph_options = [
                 col for col in df.columns
                 if "date" not in col.lower()
                 and not col.lower().startswith("unnamed")
                 and col.lower() != "no."
+                and col.lower() not in excluded_columns
                 and df[col].notna().sum() > 0
             ]
+
             graph_type = st.radio("เลือกกราฟที่ต้องการดู", graph_options)
 
             df_selected = df[df["Datetime"].dt.date == selected_date]
