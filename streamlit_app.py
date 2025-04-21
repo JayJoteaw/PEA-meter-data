@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import plotly.graph_objs as go
 import datetime
-import math
 
 # ---------- ฟังก์ชันแยกเลขจาก string ----------
 def extract_numeric_column(series):
@@ -25,12 +24,12 @@ st.set_page_config(page_title="PEA Meter Dashboard", layout="wide")
 st.title("ระบบแสดงกราฟข้อมูลมิเตอร์")
 
 # ---------- อัปโหลดไฟล์จากผู้ใช้งาน ----------
-uploaded_file = st.file_uploader("📄 อัปโหลดไฟล์ Excel", type=["xlsx"])
+uploaded_file = st.file_uploader("\U0001F4C4 อัปโหลดไฟล์ Excel", type=["xlsx"])
 if uploaded_file:
     excel_file = pd.ExcelFile(uploaded_file)
     sheet_names = excel_file.sheet_names
     selected_sheet = st.selectbox("เลือกชีตที่ต้องการ", sheet_names)
-    st.markdown("✅ ได้รับข้อมูลเรียบร้อยแล้ว 👌🏻")
+    st.markdown("ได้รับข้อมูลเรียบร้อยแล้ว 👌🏻")
 else:
     selected_sheet = None
     st.markdown("👀 รอรับข้อมูลจากผู้ใช้งาน...")
@@ -56,40 +55,34 @@ if uploaded_file and selected_date and selected_sheet:
         if header_row is None:
             st.error("ไม่พบหัวตารางที่มี 'DateTime' หรือ 'วัน-เวลา'")
         else:
-            # ✅ โหลดข้อมูลและใส่ชื่อคอลัมน์เอง
-            custom_columns = [
-                "PEA มิเตอร์", "วัน-เวลา", "สถานะ",
-                "แรงดันไฟฟ้าเฟส 1 (V)", "แรงดันไฟฟ้าเฟส 2 (V)",
-                "แรงดันไฟฟ้าเฟส 3 (V)", "Current Import (A)",
-                "Current Export (A)", "Power Factor (P.F.)"
-            ]
-            df = pd.read_excel(uploaded_file, sheet_name=selected_sheet, header=None, names=custom_columns)
-            df = df.drop(index=0)  # ลบแถวซ้ำหัวตาราง (ถ้ามี)
+            df = pd.read_excel(uploaded_file, sheet_name=selected_sheet, skiprows=header_row)
 
-            df["Datetime"] = pd.to_datetime(df["วัน-เวลา"], errors="coerce")
+            # ✅ ตรวจหาชื่อคอลัมน์วันเวลา
+            datetime_column = None
+            for col in df.columns:
+                if str(col).strip().lower() in ["datetime", "วัน-เวลา"]:
+                    datetime_column = col
+                    break
+
+            if not datetime_column:
+                st.error("ไม่พบคอลัมน์วันที่ (DateTime หรือ วัน-เวลา)")
+                st.stop()
+
+            df["Datetime"] = pd.to_datetime(df[datetime_column].astype(str), errors="coerce", dayfirst=True)
             df = df.dropna(subset=["Datetime"])
-
-            # ✅ แสดงสถานะของวันที่เลือก
-            df_day = df[df["Datetime"].dt.date == selected_date]
-            if "สถานะ" in df_day.columns and not df_day.empty:
-                status_value = df_day["สถานะ"].dropna().astype(str).unique()
-                if len(status_value) > 0:
-                    st.warning(f"📟 สถานะ: **{', '.join(status_value)}**")
 
             if not df.empty:
                 min_dt = df["Datetime"].min()
                 max_dt = df["Datetime"].max()
-                st.success(f"📊 ข้อมูลมีตั้งแต่วันที่ {min_dt.strftime('%Y-%m-%d %H:%M')} ถึง {max_dt.strftime('%Y-%m-%d %H:%M')}")
+                st.success(f"\U0001F4CA ข้อมูลมีตั้งแต่วันที่ {min_dt.strftime('%Y-%m-%d %H:%M')} ถึง {max_dt.strftime('%Y-%m-%d %H:%M')}")
 
-            # ✅ ลบคอลัมน์ที่ไม่ต้องการให้เลือกเป็นกราฟ
-            excluded_columns = ["pea มิเตอร์", "วัน-เวลา", "สถานะ"]
             graph_options = [
                 col for col in df.columns
-                if col.lower() not in excluded_columns
+                if "date" not in col.lower()
                 and not col.lower().startswith("unnamed")
+                and col.lower() != "no."
                 and df[col].notna().sum() > 0
             ]
-
             graph_type = st.radio("เลือกกราฟที่ต้องการดู", graph_options)
 
             df_selected = df[df["Datetime"].dt.date == selected_date]
@@ -140,7 +133,7 @@ if file_ready and available_times:
                 y_range = y_max - y_min
 
                 padding_top = y_range * 0.05
-                y_min_adj = y_min
+                y_min_adj = y_min - padding_top
                 y_max_adj = y_max + padding_top
                 y_dtick = max(1, round(y_range / 20))
 
