@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 import plotly.graph_objs as go
 import datetime
+import math
 
 # ---------- ฟังก์ชันแยกเลขจาก string ----------
 def extract_numeric_column(series):
@@ -71,18 +72,39 @@ if uploaded_file and selected_date and selected_sheet:
             df["Datetime"] = pd.to_datetime(df[datetime_column].astype(str), errors="coerce", dayfirst=True)
             df = df.dropna(subset=["Datetime"])
 
+            # ✅ แสดงชื่อมิเตอร์และสถานะ ถ้ามีคอลัมน์อยู่ใน DataFrame
+            col1, col2 = st.columns(2)
+
+            with col1:
+                if any(col.strip().lower() == "pea มิเตอร์" for col in df.columns):
+                    meter_col = [col for col in df.columns if col.strip().lower() == "pea มิเตอร์"][0]
+                    meter_value = df[meter_col].dropna().astype(str).unique()
+                    if len(meter_value) > 0:
+                        st.info(f"🔌 กำลังอ่านมิเตอร์: **{', '.join(meter_value)}**")
+
+            with col2:
+                if any(col.strip().lower() == "สถานะ" for col in df.columns):
+                    status_col = [col for col in df.columns if col.strip().lower() == "สถานะ"][0]
+                    status_value = df[status_col].dropna().astype(str).unique()
+                    if len(status_value) > 0:
+                        st.warning(f"📟 สถานะ: **{', '.join(status_value)}**")
+
             if not df.empty:
                 min_dt = df["Datetime"].min()
                 max_dt = df["Datetime"].max()
-                st.success(f"\U0001F4CA ข้อมูลมีตั้งแต่วันที่ {min_dt.strftime('%Y-%m-%d %H:%M')} ถึง {max_dt.strftime('%Y-%m-%d %H:%M')}")
+                st.success(f"🗓️ ข้อมูลมีตั้งแต่วันที่ {min_dt.strftime('%Y-%m-%d %H:%M')} ถึง {max_dt.strftime('%Y-%m-%d %H:%M')}")
 
+            # ✅ ลบคอลัมน์ที่ไม่ต้องการให้เลือกเป็นกราฟ
+            excluded_columns = ["pea มิเตอร์", "วัน-เวลา", "สถานะ"]
             graph_options = [
                 col for col in df.columns
                 if "date" not in col.lower()
                 and not col.lower().startswith("unnamed")
                 and col.lower() != "no."
+                and col.lower() not in excluded_columns
                 and df[col].notna().sum() > 0
             ]
+
             graph_type = st.radio("เลือกกราฟที่ต้องการดู", graph_options)
 
             df_selected = df[df["Datetime"].dt.date == selected_date]
@@ -132,14 +154,11 @@ if file_ready and available_times:
                 y_max = df_filtered[y_col].max()
                 y_range = y_max - y_min
 
-                if y_range <= 100:
-                    y_min_adj = y_min - 1
-                    y_max_adj = y_max + 1 + (y_range * 0.05)  # เพิ่ม 5% padding ด้านบน
-                    y_dtick = 10
-                else:
-                    y_min_adj = y_min - 10
-                    y_max_adj = y_max + 10 + (y_range * 0.05)  # เพิ่ม 5% padding ด้านบน
-                    y_dtick = max(1, round(y_range / 20))
+                # ✅ เพิ่มระยะเผื่อด้านบนกราฟ
+                padding_top = y_range * 0.05
+                y_min_adj = y_min
+                y_max_adj = y_max + padding_top
+                y_dtick = max(1, round(y_range / 20))
 
                 y_mean = df_filtered[y_col].mean()
                 y_peak = df_filtered[y_col].max()
