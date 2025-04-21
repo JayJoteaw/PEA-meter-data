@@ -11,11 +11,11 @@ def extract_numeric_column(series):
         .astype(float)
     )
 
-# ---------- ฟังก์ชันตรวจหา header จาก DateTime ----------
+# ---------- ฟังก์ชันตรวจหา header จาก DateTime หรือ วัน-เวลา ----------
 def detect_header_row(uploaded_file, selected_sheet):
     df_raw = pd.read_excel(uploaded_file, sheet_name=selected_sheet, header=None)
     for i, row in df_raw.iterrows():
-        if any("DateTime" in str(cell) for cell in row):
+        if any(str(cell).strip().lower() in ["datetime", "วัน-เวลา"] for cell in row):
             return i
     return None
 
@@ -26,7 +26,6 @@ st.title("ระบบแสดงกราฟข้อมูลมิเตอ�
 # ---------- อัปโหลดไฟล์จากผู้ใช้งาน ----------
 uploaded_file = st.file_uploader("\U0001F4C4 อัปโหลดไฟล์ Excel", type=["xlsx"])
 if uploaded_file:
-    # 📄 ดึงรายชื่อ sheet
     excel_file = pd.ExcelFile(uploaded_file)
     sheet_names = excel_file.sheet_names
     selected_sheet = st.selectbox("เลือกชีตที่ต้องการ", sheet_names)
@@ -54,15 +53,27 @@ if uploaded_file and selected_date and selected_sheet:
     try:
         header_row = detect_header_row(uploaded_file, selected_sheet)
         if header_row is None:
-            st.error("ไม่พบหัวตารางที่มี 'วัน-เวลา'")
+            st.error("ไม่พบหัวตารางที่มี 'DateTime' หรือ 'วัน-เวลา'")
         else:
             df = pd.read_excel(uploaded_file, sheet_name=selected_sheet, skiprows=header_row)
-            df["วัน-เวลา"] = pd.to_วัน-เวลา(df["วัน-เวลา"].astype(str), errors="coerce", dayfirst=True)
-            df = df.dropna(subset=["วัน-เวลา"])
+
+            # ✅ ตรวจหาชื่อคอลัมน์วันเวลา
+            datetime_column = None
+            for col in df.columns:
+                if str(col).strip().lower() in ["datetime", "วัน-เวลา"]:
+                    datetime_column = col
+                    break
+
+            if not datetime_column:
+                st.error("ไม่พบคอลัมน์วันที่ (DateTime หรือ วัน-เวลา)")
+                st.stop()
+
+            df["Datetime"] = pd.to_datetime(df[datetime_column].astype(str), errors="coerce", dayfirst=True)
+            df = df.dropna(subset=["Datetime"])
 
             if not df.empty:
-                min_dt = df["วัน-เวลา"].min()
-                max_dt = df["วัน-เวลา"].max()
+                min_dt = df["Datetime"].min()
+                max_dt = df["Datetime"].max()
                 st.success(f"\U0001F4CA ข้อมูลมีตั้งแต่วันที่ {min_dt.strftime('%Y-%m-%d %H:%M')} ถึง {max_dt.strftime('%Y-%m-%d %H:%M')}")
 
             graph_options = [
